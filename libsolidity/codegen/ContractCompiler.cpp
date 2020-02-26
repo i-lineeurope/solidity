@@ -863,17 +863,7 @@ bool ContractCompiler::visit(TryStatement const& _tryStatement)
 		// Success case.
 		// Stack: return values
 		TryCatchClause const& successClause = *_tryStatement.clauses().front();
-		if (successClause.parameters())
-		{
-			vector<TypePointer> exprTypes{_tryStatement.externalCall().annotation().type};
-			if (auto tupleType = dynamic_cast<TupleType const*>(exprTypes.front()))
-				exprTypes = tupleType->components();
-			vector<ASTPointer<VariableDeclaration>> const& params = successClause.parameters()->parameters();
-			solAssert(exprTypes.size() == params.size(), "");
-			for (size_t i = 0; i < exprTypes.size(); ++i)
-				solAssert(params[i] && exprTypes[i] && *params[i]->annotation().type == *exprTypes[i], "");
-		}
-		else
+		if (!successClause.parameters())
 			CompilerUtils(m_context).popStackSlots(returnSize);
 
 		_tryStatement.clauses().front()->accept(*this);

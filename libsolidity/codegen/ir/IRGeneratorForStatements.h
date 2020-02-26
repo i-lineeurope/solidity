@@ -109,11 +109,8 @@ private:
 	/// Helper function to extract structured and fallback catch clause from list of catch clauses of a TryStatement..
 	std::tuple<TryCatchClause const*, TryCatchClause const*> extractCatchClauses(std::vector<ASTPointer<TryCatchClause>> const& _catchClauses);
 
-	/// Verifies the TryCatchClause for the success case.
-	void verifyTrySuccessClause(TryCatchClause const& _successClause, TypePointer _callReturnType);
-
 	/// Generates the code for decoding the return parameters in a try call.
-	void decodeTryCallReturnParameters(TryCatchClause const& _successClause, TypePointer _callReturnType);
+	void decodeTryCallReturnParameters(TryCatchClause const& _successClause);
 
 	/// Appends code to call an external function with the given arguments.
 	/// All involved expressions have already been visited.

@@ -805,12 +805,18 @@ void TypeChecker::endVisit(TryStatement const& _tryStatement)
 	TryCatchClause const& successClause = *_tryStatement.clauses().front();
 	if (successClause.parameters())
 	{
+		vector<TypePointer> exprTypes{_tryStatement.externalCall().annotation().type};
+		if (auto tupleType = dynamic_cast<TupleType const*>(exprTypes.front()))
+			exprTypes = tupleType->components();
+		vector<ASTPointer<VariableDeclaration>> const& parameters = successClause.parameters()->parameters();
+		solAssert(exprTypes.size() == parameters.size(), "");
+		for (size_t i = 0; i < exprTypes.size(); ++i)
+			solAssert(parameters[i] && exprTypes[i] && *parameters[i]->annotation().type == *exprTypes[i], "");
+
 		TypePointers returnTypes =
 			m_evmVersion.supportsReturndata() ?
 			functionType.returnParameterTypes() :
 			functionType.returnParameterTypesWithoutDynamicTypes();
-		std::vector<ASTPointer<VariableDeclaration>> const& parameters =
-			successClause.parameters()->parameters();
 		if (returnTypes.size() != parameters.size())
 			m_errorReporter.typeError(
 				successClause.location(),

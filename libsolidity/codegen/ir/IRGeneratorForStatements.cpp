@@ -1678,7 +1678,7 @@ bool IRGeneratorForStatements::visit(TryStatement const& _tryStatement)
 
 	m_code << "case 0 { // success case\n";
 	TryCatchClause const& successClause = *_tryStatement.clauses().front();
-	decodeTryCallReturnParameters(successClause, _tryStatement.externalCall().annotation().type);
+	decodeTryCallReturnParameters(successClause);
 	successClause.block().accept(*this);
 	m_code << "}\n";
 
@@ -1717,10 +1717,9 @@ string IRGeneratorForStatements::decodeReturnParameters()
 	).render();
 }
 
-void IRGeneratorForStatements::decodeTryCallReturnParameters(TryCatchClause const& _successClause, TypePointer _callReturnType)
+void IRGeneratorForStatements::decodeTryCallReturnParameters(TryCatchClause const& _successClause)
 {
 	solAssert(m_returnInfo.has_value(), "");
-	verifyTrySuccessClause(_successClause, _callReturnType);
 	if (!_successClause.parameters())
 		return;
 
@@ -1734,20 +1733,6 @@ void IRGeneratorForStatements::decodeTryCallReturnParameters(TryCatchClause cons
 			m_context.addLocalVariable(*varDecl),
 			IRVariable(m_returnInfo->functionCall).tupleComponent(i++)
 		);
-	}
-}
-
-void IRGeneratorForStatements::verifyTrySuccessClause(TryCatchClause const& _successClause, TypePointer _callReturnType)
-{
-	if (_successClause.parameters())
-	{
-		vector<TypePointer> exprTypes{_callReturnType};
-		if (auto tupleType = dynamic_cast<TupleType const*>(exprTypes.front()))
-			exprTypes = tupleType->components();
-		vector<ASTPointer<VariableDeclaration>> const& params = _successClause.parameters()->parameters();
-		solAssert(exprTypes.size() == params.size(), "");
-		for (size_t i = 0; i < exprTypes.size(); ++i)
-			solAssert(params[i] && exprTypes[i] && *params[i]->annotation().type == *exprTypes[i], "");
 	}
 }
 
